@@ -1,0 +1,18 @@
+{
+  "name": "desafio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "icons-unix": "mkdir -p src/main/resources/static/bootstrap-icons && cp -R node_modules/bootstrap-icons/font/* src/main/resources/static/bootstrap-icons/",
+    "icons-windows": "mkdir src\\main\\resources\\static\\bootstrap-icons && xcopy /E /Y node_modules\\bootstrap-icons\\font\\* src\\main\\resources\\static\\bootstrap-icons\\",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bootstrap-icons": "^1.13.1"
+  }
+}
