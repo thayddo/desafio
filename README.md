@@ -34,8 +34,9 @@ Sistema web para gerenciamento de veículos, permitindo cadastro, edição, visu
 
 1. **Clone o repositório**
    ```sh
-   git clone <url-do-repositorio>
-   cd <nome-do-projeto>
+   git clone https://github.com/thayddo/desafio
+   cd desafio
+   ```
    
 2. **Configure o banco de dados**
 - Crie o banco `gerenciamento_veiculos` no MySQL.
