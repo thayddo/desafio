@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema de Gerenciamento de Veículos - XWZ</title>
+    <link rel="stylesheet" th:href="@{/bootstrap-icons/bootstrap-icons.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}" role="button">XWZ</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+<div class="container py-4">
+    <div>
+        <div id="alert-success" class="alert alert-success d-none" role="alert">
+            <i class="bi bi-check-circle"></i> <span id="success-message"></span>
+        </div>
+        <div id="alert-error" class="alert alert-danger d-none" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> <span id="error-message"></span>
+        </div>
+    </div>
+
+    <div class="filters-section mb-4">
+        <h3 class="mb-3 text-primary">Filtrar Veículos</h3>
+
+        <form id="filters-form">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="filter-tipo" class="form-label fw-semibold">Tipo</label>
+                    <select class="form-select" id="filter-tipo">
+                        <option value="">Todos</option>
+                        <option value="CARRO">Carro</option>
+                        <option value="MOTO">Moto</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="filter-modelo" class="form-label fw-semibold">Modelo</label>
+                    <input type="text" class="form-control" id="filter-modelo" placeholder="Digite o modelo" />
+                </div>
+
+                <div class="col-md-4">
+                    <label for="filter-fabricante" class="form-label fw-semibold">Fabricante</label>
+                    <input type="text" class="form-control" id="filter-fabricante" placeholder="Digite o fabricante" />
+                </div>
+            </div>
+
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-md-4">
+                    <label for="filter-cor" class="form-label fw-semibold">Cor</label>
+                    <input type="text" class="form-control" id="filter-cor" placeholder="Digite a cor" />
+                </div>
+
+                <div class="col-md-4">
+                    <label for="filter-ano" class="form-label fw-semibold">Ano</label>
+                    <input type="number" class="form-control" id="filter-ano" placeholder="Digite o ano" min="1900" max="2099" />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mb-2 flex-wrap">
+                <button type="button" class="btn btn-success flex-grow-1" id="btn-novo-veiculo">
+                    <i class="bi bi-plus"></i> Novo Veículo
+                </button>
+                <button type="button" class="btn btn-secondary flex-grow-1" id="btn-refresh">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar
+                </button>
+                <button type="reset" class="btn btn-secondary flex-grow-1" id="btn-limpar-filtros">
+                    <i class="bi bi-x"></i> Limpar
+                </button>
+                <button type="submit" class="btn btn-primary flex-grow-1" id="btn-buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+
+            <div class="text-muted fw-semibold mb-4">
+                Total de veículos: <span th:text="${veiculos.size()}">0</span>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="vehicles-table-container table-responsive">
+        <table class="table table-striped table-hover align-middle" id="vehicles-table" th:if="${veiculos}">
+            <thead class="table-dark">
+            <tr>
+                <th class="text-center">Tipo</th>
+                <th class="text-center">Modelo</th>
+                <th class="text-center">Fabricante</th>
+                <th class="text-center">Ano</th>
+                <th class="text-center">Cor</th>
+                <th class="text-center">Preço</th>
+                <th class="text-center">Portas</th>
+                <th class="text-center">Combustível</th>
+                <th class="text-center">Cilindradas</th>
+                <th class="text-center">Ações</th>
+            </tr>
+            </thead>
+            <tbody id="vehicles-tbody">
+            <tr th:each="v : ${veiculos}" th:data-id="${v.id}">
+                <td class="text-center">
+                        <span class="badge" th:classappend="${v.getTipoVeiculo().name() == 'CARRO'} ? ' bg-primary' : ' bg-success'">
+                            <i class="bi" th:classappend="${v.getTipoVeiculo().name() == 'CARRO'} ? ' bi-car-front' : ' bi-bicycle'"></i>
+                            <span th:text="${v.getTipoVeiculo().name()}"></span>
+                        </span>
+                </td>
+                <td class="text-center" th:text="${v.modelo}"></td>
+                <td class="text-center" th:text="${v.fabricante}"></td>
+                <td class="text-center"th:text="${v.ano}"></td>
+                <td class="text-center"th:text="${v.cor}"></td>
+                <td class="price-display text-center" th:text="'R$ ' + ${#numbers.formatDecimal(v.preco, 1, 'COMMA', 2, 'POINT')}"></td>
+                <td class="text-center">
+                    <small th:if="${v.getTipoVeiculo().name() == 'CARRO'}" th:text="${v.quantidadePortas}"></small>
+                    <small th:unless="${v.getTipoVeiculo().name() == 'CARRO'}">-</small>
+                </td>
+                <td class="text-center">
+                    <small th:if="${v.getTipoVeiculo().name() == 'CARRO'}" th:text="${v.tipoCombustivel}"></small>
+                    <small th:unless="${v.getTipoVeiculo().name() == 'CARRO'}">-</small>
+                </td>
+                <td class="text-center">
+                    <small th:if="${v.getTipoVeiculo().name() == 'MOTO'}" th:text="${v.cilindrada + 'CC'}"></small>
+                    <small th:unless="${v.getTipoVeiculo().name() == 'MOTO'}">-</small>
+                </td>
+                <td class="actions-cell text-center">
+                    <button type="button" th:data-id="${v.id}" class="btn btn-primary btn-sm me-1 btn-visualizar" title="Visualizar">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button type="button" th:data-id="${v.id}" class="btn btn-warning btn-sm me-1 btn-editar" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" th:data-id="${v.id}" class="btn btn-danger btn-sm btn-excluir" title="Excluir">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoVeiculo" tabindex="-1" aria-labelledby="modalNovoVeiculoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="form-novo-veiculo">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNovoVeiculoLabel"><i class="bi bi-plus-circle"></i> Novo Veículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div id="alert-error-modal" class="alert alert-danger d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <span id="error-message-modal"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select novo-veiculo" name="tipoVeiculo" required>
+                                <option value="">Selecione</option>
+                                <option value="CARRO">Carro</option>
+                                <option value="MOTO">Moto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" class="form-control" name="modelo" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fabricante</label>
+                            <input type="text" class="form-control" name="fabricante" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ano</label>
+                            <input type="number" class="form-control" name="ano" min="1900" max="2099" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cor</label>
+                            <input type="text" class="form-control" name="cor" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Preço</label>
+                            <input type="number" step="0.01" class="form-control" name="preco" required />
+                        </div>
+                        <div class="col-md-6 grupo-portas">
+                            <label class="form-label">Portas</label>
+                            <input type="number" class="form-control" name="quantidadePortas" />
+                        </div>
+                        <div class="col-md-6 grupo-combustivel">
+                            <label class="form-label">Combustível</label>
+                            <select class="form-select" name="tipoCombustivel" id="tipoCombustivel">
+                                <option value="">Selecione</option>
+                                <option value="GASOLINA">Gasolina</option>
+                                <option value="ETANOL">Etanol</option>
+                                <option value="DIESEL">Diesel</option>
+                                <option value="FLEX">Flex</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 grupo-cilindrada">
+                            <label class="form-label">Cilindrada</label>
+                            <input type="number" class="form-control" name="cilindrada" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalEditarVeiculo" tabindex="-1" aria-labelledby="modalEditarVeiculoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="form-editar-veiculo">
+                <input type="hidden" name="id" id="editar-id-veiculo" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarVeiculoLabel">
+                        <i class="bi bi-pencil-square"></i> Editar Veículo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div id="alert-error-editar" class="alert alert-danger d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <span id="error-message-editar"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" name="tipoVeiculo" id="editar-tipoVeiculo" disabled>
+                                <option value="CARRO">Carro</option>
+                                <option value="MOTO">Moto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" class="form-control" name="modelo" id="editar-modelo" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fabricante</label>
+                            <input type="text" class="form-control" name="fabricante" id="editar-fabricante" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ano</label>
+                            <input type="number" class="form-control" name="ano" id="editar-ano" min="1900" max="2099" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cor</label>
+                            <input type="text" class="form-control" name="cor" id="editar-cor" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Preço</label>
+                            <input type="number" step="0.01" class="form-control" name="preco" id="editar-preco" required />
+                        </div>
+                        <div class="col-md-6 grupo-portas">
+                            <label class="form-label">Portas</label>
+                            <input type="number" class="form-control" name="quantidadePortas" id="editar-portas" />
+                        </div>
+                        <div class="col-md-6 grupo-combustivel">
+                          <label class="form-label">Combustível</label>
+                          <select class="form-select" name="tipoCombustivel" id="editar-combustivel">
+                              <option value="">Selecione</option>
+                              <option value="GASOLINA">Gasolina</option>
+                              <option value="ETANOL">Etanol</option>
+                              <option value="DIESEL">Diesel</option>
+                              <option value="FLEX">Flex</option>
+                          </select>
+                        </div>
+                        <div class="col-md-6 grupo-cilindrada">
+                            <label class="form-label">Cilindrada (para motos)</label>
+                            <input type="number" class="form-control" name="cilindrada" id="editar-cilindrada" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Atualizar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalDetalhesVeiculo" tabindex="-1" aria-labelledby="modalDetalhesVeiculoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDetalhesVeiculoLabel">
+                    <i class="bi bi-eye"></i> Detalhes do Veículo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-select" id="detalhe-tipoVeiculo" disabled>
+                            <option value="CARRO">Carro</option>
+                            <option value="MOTO">Moto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" class="form-control" id="detalhe-modelo" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fabricante</label>
+                        <input type="text" class="form-control" id="detalhe-fabricante" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ano</label>
+                        <input type="number" class="form-control" id="detalhe-ano" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Cor</label>
+                        <input type="text" class="form-control" id="detalhe-cor" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Preço</label>
+                        <input type="text" class="form-control" id="detalhe-preco" disabled />
+                    </div>
+                    <div class="col-md-6 grupo-portas">
+                        <label class="form-label">Portas</label>
+                        <input type="number" class="form-control" id="detalhe-portas" disabled />
+                    </div>
+                    <div class="col-md-6 grupo-combustivel">
+                        <label class="form-label">Combustível</label>
+                        <select class="form-select" name="tipoCombustivel" id="detalhe-combustivel" disabled>
+                            <option value="">Selecione</option>
+                            <option value="GASOLINA">Gasolina</option>
+                            <option value="ETANOL">Etanol</option>
+                            <option value="DIESEL">Diesel</option>
+                            <option value="FLEX">Flex</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 grupo-cilindrada">
+                        <label class="form-label">Cilindrada (para motos)</label>
+                        <input type="text" class="form-control" id="detalhe-cilindrada" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Data de criação</label>
+                        <input type="text" class="form-control" id="detalhe-createdAt" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Última atualização</label>
+                        <input type="text" class="form-control" id="detalhe-updatedAt" disabled />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="bg-primary text-white mt-5">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h5 class="fw-bold">Sistema de Gerenciamento de Veículos - XWZ</h5>
+                <p class="mb-0">Gerencie e filtre carros e motos de forma eficiente e prática.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <small>
+                    Desenvolvido com <i class="bi bi-heart-fill text-danger"></i> por <strong>Annie</strong>
+                </small>
+                <p class="mb-0">&copy; <span id="currentYear"></span> Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/index.js}"></script>
+
+</body>
+</html>
